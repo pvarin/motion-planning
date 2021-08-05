@@ -16,12 +16,15 @@ public:
     {
     }
 
-    std::unique_ptr<Data> data() { return data_; };
-    const std::unique_ptr<const Data> data() const { return data_; };
+    Data& data() { return *data_; };
+    const Data& data() const { return *data_; };
     std::vector<std::shared_ptr<State>>& neighbors() { return neighbors_; }
-    const std::vector<const std::shared_ptr<const State>>& neighbors() const { return neighbors_; }
+    const std::vector<std::shared_ptr<State>>& neighbors() const { return neighbors_; }
 
 private:
     std::unique_ptr<Data> data_;
     std::vector<std::shared_ptr<State>> neighbors_;
 };
+
+template <typename State_>
+using Path = std::vector<std::shared_ptr<State_>>;
