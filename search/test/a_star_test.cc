@@ -21,9 +21,9 @@ TEST(Graph, BREADTH_FIRST_SEARCH)
 {
     auto nodes = test_graph();
     success_fn<State<double>> is_success = [](const State<double>& node) -> bool { return node.data() > 2.9; };
-    bool success = breadth_first_search(nodes[0], is_success);
+    auto path = breadth_first_search(nodes[0], is_success);
 
-    ASSERT_TRUE(success);
+    ASSERT_TRUE(path.has_value());
 }
 
 TEST(GRAPH_SEARCH, BREADTH_FIRST_SEARCH)
@@ -31,7 +31,7 @@ TEST(GRAPH_SEARCH, BREADTH_FIRST_SEARCH)
     auto nodes = test_graph();
     success_fn<State<double>> is_success = [](const State<double>& node) -> bool { return node.data() > 2.9; };
     transition_reward_fn<State<double>> transition_reward = [](const State<double>& from_node, const State<double>& to_node) -> double { return -(from_node.data() + to_node.data()); };
-    bool success = djikstra_search(nodes[0], is_success, transition_reward);
+    auto path = djikstra_search(nodes[0], is_success, transition_reward);
 
-    ASSERT_TRUE(success);
+    ASSERT_TRUE(path.has_value());
 }

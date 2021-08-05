@@ -58,30 +58,33 @@ std::optional<Path<State>> depth_first_search(std::shared_ptr<State> start, cons
 //////////////////////////
 
 template <typename State>
-bool breadth_first_search(std::shared_ptr<State> start, const success_fn<State>& is_success, std::unordered_set<const State*>& visited_states)
+std::optional<Path<State>> breadth_first_search(std::shared_ptr<State> start, const success_fn<State>& is_success, std::unordered_set<const State*>& visited_states)
 {
-    std::deque<std::shared_ptr<State>> state_queue;
+    std::deque<Path<State>> path_queue;
     visited_states.insert(start.get());
-    state_queue.push_back(start);
+    path_queue.push_back({ start });
 
-    while (state_queue.size() > 0) {
-        auto next_state = state_queue.front();
+    while (path_queue.size() > 0) {
+        auto current_path = path_queue.front();
+        const auto& next_state = current_path.back();
         if (is_success(*next_state)) {
-            return true;
+            return current_path;
         }
         for (auto neighbor : next_state->neighbors()) {
             if (visited_states.find(neighbor.get()) == visited_states.end()) {
                 visited_states.insert(neighbor.get());
-                state_queue.push_back(neighbor);
+                Path<State> next_path = current_path;
+                next_path.push_back(neighbor);
+                path_queue.push_back(next_path);
             }
         }
-        state_queue.pop_front();
+        path_queue.pop_front();
     }
-    return false;
+    return std::nullopt;
 }
 
 template <typename State>
-bool breadth_first_search(std::shared_ptr<State> start, const success_fn<State>& is_success)
+std::optional<Path<State>> breadth_first_search(std::shared_ptr<State> start, const success_fn<State>& is_success)
 {
     std::unordered_set<const State*> visited_states = {};
     return breadth_first_search(start, is_success, visited_states);
@@ -92,31 +95,34 @@ bool breadth_first_search(std::shared_ptr<State> start, const success_fn<State>&
 //////////////
 
 template <typename State>
-bool djikstra_search(std::shared_ptr<State> start, const success_fn<State>& is_success, const transition_reward_fn<State>& transition_reward, std::unordered_set<const State*>& visited_states)
+std::optional<Path<State>> djikstra_search(std::shared_ptr<State> start, const success_fn<State>& is_success, const transition_reward_fn<State>& transition_reward, std::unordered_set<const State*>& visited_states)
 {
-    std::priority_queue<std::pair<double, std::shared_ptr<State>>> state_queue;
+    std::priority_queue<std::pair<double, Path<State>>> path_queue;
     visited_states.insert(start.get());
-    state_queue.push({ 0, start });
+    path_queue.push({ 0, { start } });
 
-    while (state_queue.size() > 0) {
-        auto [reward_so_far, next_state] = state_queue.top();
+    while (path_queue.size() > 0) {
+        auto [reward_so_far, current_path] = path_queue.top();
+        const auto& next_state = current_path.back();
         if (is_success(*next_state)) {
-            return true;
+            return current_path;
         }
         for (auto neighbor : next_state->neighbors()) {
             if (visited_states.find(neighbor.get()) == visited_states.end()) {
                 visited_states.insert(neighbor.get());
                 double step_reward = transition_reward(*next_state, *neighbor);
-                state_queue.push({ step_reward + reward_so_far, neighbor });
+                Path<State> next_path = current_path;
+                next_path.push_back(neighbor);
+                path_queue.push({ step_reward + reward_so_far, next_path });
             }
         }
-        state_queue.pop();
+        path_queue.pop();
     }
-    return false;
+    return std::nullopt;
 }
 
 template <typename State>
-bool djikstra_search(std::shared_ptr<State> start, const success_fn<State>& is_success, const transition_reward_fn<State>& transition_reward)
+std::optional<Path<State>> djikstra_search(std::shared_ptr<State> start, const success_fn<State>& is_success, const transition_reward_fn<State>& transition_reward)
 {
     std::unordered_set<const State*> visited_states = {};
     return djikstra_search(start, is_success, transition_reward, visited_states);
