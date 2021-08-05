@@ -26,12 +26,23 @@ TEST(Graph, BREADTH_FIRST_SEARCH)
     ASSERT_TRUE(path.has_value());
 }
 
-TEST(GRAPH_SEARCH, BREADTH_FIRST_SEARCH)
+TEST(GRAPH_SEARCH, DJIKSTRA_SEARCH)
 {
     auto nodes = test_graph();
     success_fn<State<double>> is_success = [](const State<double>& node) -> bool { return node.data() > 2.9; };
-    transition_reward_fn<State<double>> transition_reward = [](const State<double>& from_node, const State<double>& to_node) -> double { return -(from_node.data() + to_node.data()); };
-    auto path = djikstra_search(nodes[0], is_success, transition_reward);
+    transition_cost_fn<State<double>> transition_cost = [](const State<double>& from_node, const State<double>& to_node) -> double { return from_node.data() + to_node.data(); };
+    auto path = djikstra_search(nodes[0], is_success, transition_cost);
+
+    ASSERT_TRUE(path.has_value());
+}
+
+TEST(GRAPH_SEARCH, A_STAR_SEARCH)
+{
+    auto nodes = test_graph();
+    success_fn<State<double>> is_success = [](const State<double>& node) -> bool { return node.data() > 2.9; };
+    transition_cost_fn<State<double>> transition_cost = [](const State<double>& from_node, const State<double>& to_node) -> double { return from_node.data() + to_node.data(); };
+    value_fn<State<double>> heuristic = [](const State<double>& node) -> double { return 0; };
+    auto path = a_star_search(nodes[0], is_success, heuristic, transition_cost);
 
     ASSERT_TRUE(path.has_value());
 }
