@@ -1,0 +1,12 @@
+cc_library(
+    name = "graph",
+    hdrs = ["graph.h"],
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "a_star",
+    hdrs = ["a_star.h"],
+    deps = [":graph"],
+    visibility = ["//visibility:public"],
+)
